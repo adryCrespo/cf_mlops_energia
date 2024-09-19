@@ -26,6 +26,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./airflow-logs:/opt/airflow/logs
       - ./scripts:/opt/airflow/scripts
+      - ./data:/opt/airflow/data
     healthcheck:
       test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
       interval: 30s
@@ -48,6 +49,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./airflow-logs:/opt/airflow/logs
       - ./scripts:/opt/airflow/scripts
+      - ./data:/opt/airflow/data
     ports:
       - "8080:8080"
     healthcheck:
