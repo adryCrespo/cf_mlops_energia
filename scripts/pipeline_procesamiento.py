@@ -2,14 +2,15 @@
 #Transformaciones de datos
 import pandas as pd
 import numpy as np
-
+from get_env_vars import pull_env
 # como pasar argunmentos en airflow
-DATA_PATH = "/opt/airflow/data/"
+# DATA_PATH = "/opt/airflow/data/"
 
 
-def import_full_data():
-    path_data = DATA_PATH+"vic_electricity.csv"
-    data = pd.read_csv(path_data, parse_dates = ['Time'])
+def import_full_data(input_data_path:str):
+    # print(DATA_PATH)
+    # path_data = DATA_PATH+"vic_electricity.csv"
+    data = pd.read_csv(input_data_path, parse_dates = ['Time'])
     return data
 
 ## Procesamiento
@@ -57,41 +58,19 @@ def pre_model_processing(df):
 
 
 
-def procesamiento():
-    data = import_full_data()
+def procesamiento(**kwargs):
+    
+    ti = kwargs['ti']
+    DATA_PATH = ti.xcom_pull(key='data_path', task_ids='task_env')
+    nombre_archivo_input = ti.xcom_pull(key='nombre_archivo_input', task_ids='task_env')
+    
+    print(f"tipo: {type(DATA_PATH)},{DATA_PATH}") 
+    data = import_full_data(DATA_PATH+nombre_archivo_input)
     df = limpieza_datos(data)
     df = creacion_variables(df)
     df = pre_model_processing(df)
     df = df.loc["2012-01-01":]
-    print(f"version pandas: {pd.__version__}")
-    path_data = DATA_PATH +"procesamiento.csv"
+    
+    nombre_archivo_procesamiento = ti.xcom_pull(key='nombre_archivo_procesamiento', task_ids='task_env')
+    path_data = DATA_PATH + nombre_archivo_procesamiento
     df.to_csv(path_data)
-
-
-# df_model = pre_model_processing(df)
-
-
-
-
-# ## Entrenamiento
-# def separacion_train_test(df_model):
-#     test_data = df_model.loc["2014-07-01":]
-#     train_data = df_model.loc[:"2014-06-30"]
-#     Y_train = train_data["demand"]
-#     X_train = train_data.loc[:,~train_data.columns.isin(['demand'])]
-#     Y_test = test_data["demand"]
-#     X_test = test_data.loc[:,~test_data.columns.isin(['demand'])]
-#     return X_train, X_test, Y_train, Y_test 
-
-# X_train, X_test, Y_train, Y_test = separacion_train_test(df_model) 
-
-# model = LinearRegression(n_jobs=-1)
-# model.fit(X_train,Y_train)
-
-
-# # Predict and Evaluation
-# y_pred = model.predict(X_test)
-# rmse = root_mean_squared_error(Y_test, y_pred)
-
-
-
