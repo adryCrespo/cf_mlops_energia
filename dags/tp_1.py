@@ -4,11 +4,11 @@ import pendulum
 
 from airflow.decorators import dag, task
 @dag(
-    "taskflow api",
+    "taskflow_api2",
     schedule=None,
-    start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
-    catchup=False,
-    tags=["example"],
+    default_args={"retries": 1, 'owner':"adry"},
+    description="DAG tutorial",
+    tags=["example"]
 )
 def tutorial_taskflow_api():
     """
@@ -27,25 +27,22 @@ def tutorial_taskflow_api():
         pipeline. In this case, getting data is simulated by reading from a
         hardcoded JSON string.
         """
-        data_string = '{"1001": 301.27, "1002": 433.21, "1003": 502.22}'
+        n1 = 1
 
-        order_data_dict = json.loads(data_string)
-        return order_data_dict
-    @task(multiple_outputs=True)
-    def transform(order_data_dict: dict):
+        return n1
+    @task()
+    def transform(n1: dict):
         """
         #### Transform task
         A simple Transform task which takes in the collection of order data and
         computes the total order value.
         """
-        total_order_value = 0
+        total_order_value = 10
 
-        for value in order_data_dict.values():
-            total_order_value += value
-
-        return {"total_order_value": total_order_value}
+        
+        return total_order_value + n1
     @task()
-    def load(total_order_value: float):
+    def load(n2: float):
         """
         #### Load task
         A simple Load task which takes in the result of the Transform task and

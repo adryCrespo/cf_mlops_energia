@@ -6,8 +6,8 @@ from sklearn.linear_model import LinearRegression
 import pickle
 
 # como pasar argunmentos en airflow
-DATA_PATH = "/opt/airflow/data/"
-nombre_archivo_procesamiento = "procesamiento.csv"
+# DATA_PATH = "/opt/airflow/data/"
+# nombre_archivo_procesamiento = "procesamiento.csv"
 
 def import_processed_data(path_data):
     # path_data = DATA_PATH + nombre_archivo_procesamiento 
