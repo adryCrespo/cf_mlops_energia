@@ -1,0 +1,36 @@
+artifact_path: model_lineal
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.8.20
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.3.2
+mlflow_version: 2.16.2
+model_size_bytes: 1021
+model_uuid: 88130efc61774ae086bce53b8917e8cc
+run_id: 7560179c9aa9477eac49054ab339522e
+signature:
+  inputs: '[{"type": "double", "name": "temperature", "required": true}, {"type":
+    "long", "name": "hour", "required": true}, {"type": "long", "name": "year", "required":
+    true}, {"type": "long", "name": "mes", "required": true}, {"type": "double", "name":
+    "demand_lag_1h", "required": true}, {"type": "double", "name": "demand_lag_2h",
+    "required": true}, {"type": "double", "name": "demand_lag_3h", "required": true},
+    {"type": "double", "name": "demand_lag_4h", "required": true}, {"type": "double",
+    "name": "demand_lag_5h", "required": true}, {"type": "double", "name": "demand_lag_6h",
+    "required": true}, {"type": "double", "name": "demand_lag_7h", "required": true},
+    {"type": "double", "name": "demand_lag_8h", "required": true}, {"type": "double",
+    "name": "demand_lag_9h", "required": true}, {"type": "double", "name": "demand_lag_10h",
+    "required": true}, {"type": "double", "name": "mv_avg_1", "required": true}, {"type":
+    "double", "name": "mv_avg_2", "required": true}, {"type": "double", "name": "mv_avg_3",
+    "required": true}, {"type": "double", "name": "mv_avg_4", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float64", "shape": [-1]}}]'
+  params: null
+utc_time_created: '2024-09-29 09:08:58.786343'
