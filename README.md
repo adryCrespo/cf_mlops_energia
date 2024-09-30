@@ -39,7 +39,7 @@ La configuracion de docker de los contenedores relacionados con MLFLOW estan bas
 - Descargar el git
 - Abrir terminal, colocarse en esta carpeta. Ejecutar docker-compose
 ```
-'docker-compose up'
+'docker-compose up --build'
 ```
 - Esperar a que se carguen todos los servicios:
     - Airflow: http://localhost:8080/  
