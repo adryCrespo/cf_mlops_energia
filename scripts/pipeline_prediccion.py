@@ -19,9 +19,9 @@ def import_processed_data(path_data):
 
 
 # ## Entrenamiento
-def separacion_train_test(df_model):
-    test_data = df_model.loc["2014-07-01":]
-    train_data = df_model.loc[:"2014-06-30"]
+def separacion_train_test(df_model, year:str):
+    test_data = df_model.loc[f"{year}-12-01":]
+    train_data = df_model.loc[:f"{year}-11-30"]
     Y_train = train_data["demand"]
     X_train = train_data.loc[:,~train_data.columns.isin(['demand'])]
     Y_test = test_data["demand"]

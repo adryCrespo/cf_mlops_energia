@@ -113,7 +113,7 @@ services:
             context: .
             dockerfile: Dockerfile
             
-        entrypoint: ./scripts/airflow-entrypoint_2.sh
+        entrypoint: ./scripts/airflow-entrypoint.sh
         user: "${AIRFLOW_UID:-50000}:0"
           
         env_file:
@@ -132,7 +132,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # entrypoint: ./scripts/airflow-entrypoint.sh
     command: scheduler
     restart: on-failure
     depends_on:
@@ -162,7 +161,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # entrypoint: ./scripts/airflow-entrypoint.sh
     command: webserver
     restart: always
     depends_on:
