@@ -164,10 +164,18 @@ def pipeline_ML():
             champion_model_version = None
             model_name = "modelo_lineal_energia"
 
-            challenger_model_version = client.get_model_version_by_alias( model_name, "challenger" )
-            if challenger_model_version is None :
-                 print("NO hay challenger")
-                 return None
+
+
+            try:
+                challenger_model_version = client.get_model_version_by_alias( model_name, "challenger" )
+
+            except mlflow.exceptions.RestException as e:
+                print(f"RestException: {e}")
+                # print(f"Status Code: {e.status_code}")
+                print(f"Message:  No hay challenger")
+                return " No challenger"
+
+
 
             challenger_run_id = challenger_model_version.run_id
 
@@ -189,16 +197,16 @@ def pipeline_ML():
             
             rmse_test_champion = mean_squared_error(Y_test, y_pred_champion,squared=False)
             rmse_test_challenger = mean_squared_error(Y_test, y_pred_challenger,squared=False)
-            print(f"rmse_challenger dataset test: {rmse_test_challenger:.2f}")
-            print(f"rmse_champion dataset test: {rmse_test_champion:.2f}")
+            print(f"year : {env_vars['year']}")
 
-            if rmse_test_challenger > rmse_test_champion:
-                print("El modelo champion es mejor")
-                client.set_model_version_tag(
-                    challenger_model_version.name,
-                    challenger_model_version.version,
-                    "archived",
-                    "true",)
+            print(f"rmse_champion dataset test : {rmse_test_champion:.2f}")
+            print(f"rmse_challenger dataset test : {rmse_test_challenger:.2f}")
+
+            mlflow.log_metrics({"year": int(env_vars['year']), 
+                                f"rmse_champion dataset test ": round(rmse_test_champion,2), 
+                                f"rmse_challenger dataset test ": round(rmse_test_challenger,2)})
+
+
                 
             if rmse_test_challenger < rmse_test_champion:
                 print("El modelo challenger es mejor")
@@ -210,6 +218,12 @@ def pipeline_ML():
                     "archived",
                         "true")
 
+                client.delete_registered_model_alias(
+                    champion_model_version.name,
+                    "champion",)
+                client.delete_registered_model_alias(
+                    challenger_model_version.name,
+                    "challenger",)
 
                 print("Promoviendo el modelo challenger a champion")
                 client.set_registered_model_alias(
@@ -217,9 +231,6 @@ def pipeline_ML():
                     "champion",
                     challenger_model_version.version,
                 )
-                client.delete_registered_model_alias(
-                    champion_model_version.name,
-                    "champion",)
     
         return "comparacion exitosa"
 
@@ -259,7 +270,7 @@ def pipeline_ML():
             y_pred_champion = model_champion.predict(X_test)
             
             rmse_test_champion = mean_squared_error(Y_test, y_pred_champion,squared=False)
-            mlflow.log_metric(f"rmse_champion dataset test: {rmse_test_champion:.2f}")
+            mlflow.log_metric(f"rmse_champion dataset test {env_vars['year']}",rmse_test_champion)
 
     env_vars = task_init_env()
     parametros_mlflow = task_init_mlflow()

@@ -10,7 +10,7 @@ def mlflow_experiment_init():
     
 
     # experiment_id = mlflow.create_experiment("Prediccion demanda energia3")
-    mlflow.set_experiment("Prediccion demanda energia2")
+    mlflow.set_experiment("Prediccion demanda energia- Codigo facilito")
     mlflow.set_experiment_tags(
         {
             "project": "CF_MLOPS_Energia",

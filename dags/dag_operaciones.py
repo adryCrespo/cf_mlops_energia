@@ -23,20 +23,19 @@ with DAG(
         wait_for_completion=True,
     )
 
-    # trigger_year_2013 = TriggerDagRunOperator(
-    #     task_id="trigger_2013",
-    #     trigger_dag_id="predicciones_parametrizo_year",  # Ensure this equals the dag_id of the DAG to trigger
-    #     conf={"year": "2013"},
-    #     reset_dag_run=True,
-    #     wait_for_completion=True,
-    # )
+    trigger_year_2013 = TriggerDagRunOperator(
+        task_id="trigger_2013",
+        trigger_dag_id="predicciones_parametrizo_year",  # Ensure this equals the dag_id of the DAG to trigger
+        conf={"year": "2013"},
+        reset_dag_run=True,
+        wait_for_completion=True,
+    )
 
-    # trigger_year_2014 = TriggerDagRunOperator(
-    #     task_id="trigger_2014",
-    #     trigger_dag_id="predicciones_parametrizo_year",  # Ensure this equals the dag_id of the DAG to trigger
-    #     conf={"year": "2014"},
-    #     reset_dag_run=True,
-    #     wait_for_completion=True,
-    # )
-    # trigger_procesamiento >> trigger_year_2013 >> trigger_year_2014
-    trigger_procesamiento >> trigger_year_2012
+    trigger_year_2014 = TriggerDagRunOperator(
+        task_id="trigger_2014",
+        trigger_dag_id="predicciones_parametrizo_year",  # Ensure this equals the dag_id of the DAG to trigger
+        conf={"year": "2014"},
+        reset_dag_run=True,
+        wait_for_completion=True,
+    )
+    trigger_procesamiento >> trigger_year_2012>> trigger_year_2013 >> trigger_year_2014
