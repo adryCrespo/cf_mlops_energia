@@ -20,10 +20,10 @@ from airflow.decorators import dag, task
 
 
 @dag(
-    "procesamiento_v2",
+    "dag_procesamiento",
     default_args={"retries": 1, 'owner':"adry"},
     description="DAG tutorial",
-    schedule=None,  tags=["v_2"])
+    schedule=None,  tags=["v_3","programa"])
 def procesamiento_datos():
     
     @task()
@@ -47,7 +47,22 @@ def procesamiento_datos():
         nombre_archivo_procesamiento = env_vars["nombre_archivo_procesamiento"]
         path_data = DATA_PATH + nombre_archivo_procesamiento
         df.to_csv(path_data) 
+        return path_data
+
+    @task()
+    def task_separacion_years(path_data):
+        import pandas as pd
+        df = pd.read_csv(path_data)
+
+        var_unique_years = df.year.unique().tolist()
+        tmp_path_data = path_data.replace(".csv","")
+
+        for year in var_unique_years:
+            df_tmp = df.query(f"year == {year}")
+            df_tmp.to_csv(f"{tmp_path_data}_{year}.csv", index=False)
 
     env_vars = task_init_env()    
-    task_procesamiento(env_vars)   
+    path_data = task_procesamiento(env_vars) 
+    task_separacion_years(path_data)  
+    
 procesamiento_datos() 

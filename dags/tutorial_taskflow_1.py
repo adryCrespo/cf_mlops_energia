@@ -4,11 +4,11 @@ import pendulum
 
 from airflow.decorators import dag, task
 @dag(
-    "taskflow_api2",
+    "taskflow_api_1",
     schedule=None,
     default_args={"retries": 1, 'owner':"adry"},
     description="DAG tutorial",
-    tags=["example"]
+    tags=["tutorial"]
 )
 def tutorial_taskflow_api():
     """

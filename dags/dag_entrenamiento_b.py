@@ -24,15 +24,19 @@ from mlflow_functions import mlflow_experiment_init
 from airflow.decorators import dag, task
 
 @dag(
-    "predicciones_v3",
+    "predicciones_parametrizo_year",
     default_args={"retries": 1, 'owner':"adry"},
     description="DAG tutorial",
-    schedule=None,  tags=["v_3"])
+    schedule=None,  tags=["v_3","programa"])
 def pipeline_ML():
 
     @task()
-    def task_init_env():
+    def task_init_env(dag_run = None):
         env_vars = init_env()
+
+        year = dag_run.conf.get("year")
+        env_vars["year"] = str(year)
+
         return env_vars
 
     @task()
@@ -44,9 +48,9 @@ def pipeline_ML():
     def task_separacion_datos(env_vars):
            
         DATA_PATH = env_vars["data_path"] 
-        nombre_archivo_procesamiento = env_vars["nombre_archivo_procesamiento"] 
+        nombre_archivo_procesamiento = env_vars["arhivo_procesamiento_"+env_vars["year"]] 
         path_data_procesamiento = DATA_PATH + nombre_archivo_procesamiento
-    
+
         df_model = import_processed_data(path_data_procesamiento )
         X_train, _ , i_ , _ = separacion_train_test(df_model) 
         serie_indices = X_train.reset_index()[["index"]]
@@ -62,7 +66,8 @@ def pipeline_ML():
     def task_entrenamiento(env_vars, path_data_indices, parametros_mlflow):
         import mlflow
         DATA_PATH = env_vars["data_path"] 
-        nombre_archivo_procesamiento = env_vars["nombre_archivo_procesamiento"] 
+        # nombre_archivo_procesamiento = env_vars["nombre_archivo_procesamiento"]
+        nombre_archivo_procesamiento = env_vars["arhivo_procesamiento_"+env_vars["year"]] 
         path_data_procesamiento = DATA_PATH + nombre_archivo_procesamiento
    
         X_train, Y_train = get_training_data(path_data_indices, path_data_procesamiento) 
@@ -125,7 +130,8 @@ def pipeline_ML():
     def task_comparacion(env_vars, path_data_indices, parametros_mlflow, resultado_task  ):
         
         DATA_PATH = env_vars["data_path"] 
-        nombre_archivo_procesamiento = env_vars["nombre_archivo_procesamiento"] 
+        # nombre_archivo_procesamiento = env_vars["nombre_archivo_procesamiento"] 
+        nombre_archivo_procesamiento = env_vars["arhivo_procesamiento_"+env_vars["year"]] 
         path_data_procesamiento = DATA_PATH + nombre_archivo_procesamiento
 
    
@@ -183,6 +189,8 @@ def pipeline_ML():
             
             rmse_test_champion = mean_squared_error(Y_test, y_pred_champion,squared=False)
             rmse_test_challenger = mean_squared_error(Y_test, y_pred_challenger,squared=False)
+            print(f"rmse_challenger dataset test: {rmse_test_challenger:.2f}")
+            print(f"rmse_champion dataset test: {rmse_test_champion:.2f}")
 
             if rmse_test_challenger > rmse_test_champion:
                 print("El modelo champion es mejor")
@@ -213,17 +221,54 @@ def pipeline_ML():
                     champion_model_version.name,
                     "champion",)
     
+        return "comparacion exitosa"
+
+    @task()
+    def task_evalaucion(env_vars, path_data_indices, parametros_mlflow, resultado_comparacion):
+        DATA_PATH = env_vars["data_path"] 
+        # nombre_archivo_procesamiento = env_vars["nombre_archivo_procesamiento"] 
+        nombre_archivo_procesamiento = env_vars["arhivo_procesamiento_"+env_vars["year"]] 
+        path_data_procesamiento = DATA_PATH + nombre_archivo_procesamiento
+
+
+        import mlflow
+        from pathlib import Path
 
 
 
+        mlflow.set_tracking_uri(parametros_mlflow["tracking_uri"])
+        mlflow_run_id = parametros_mlflow["mlflow_run_id"]
+
+        with mlflow.start_run(run_id=mlflow_run_id):
+
+            destination = Path("scripts/artifacts", mlflow_run_id)
+            destination.mkdir(parents=True, exist_ok=True)
+            client = MlflowClient()
+
+            champion_model_version = None
+            model_name = "modelo_lineal_energia"
+
+            champion_model_version = client.get_model_version_by_alias( model_name, "champion")
+            champion_run_id = champion_model_version.run_id
+            model_champion = mlflow.sklearn.load_model(
+                                                f"runs:/{champion_run_id}/model_lineal",
+                                                dst_path=destination    )
+
+            
+            X_test, Y_test = get_test_data(path_data_indices, path_data_procesamiento)
+            y_pred_champion = model_champion.predict(X_test)
+            
+            rmse_test_champion = mean_squared_error(Y_test, y_pred_champion,squared=False)
+            mlflow.log_metric(f"rmse_champion dataset test: {rmse_test_champion:.2f}")
 
     env_vars = task_init_env()
     parametros_mlflow = task_init_mlflow()
     path_data_indices = task_separacion_datos(env_vars)
-    resultado_tak = task_entrenamiento(env_vars,path_data_indices, parametros_mlflow)
-    a="a"+"b"
-    print(a)
-    task_comparacion(env_vars,path_data_indices,parametros_mlflow , resultado_tak )
+    resultado_task = task_entrenamiento(env_vars,path_data_indices, parametros_mlflow)
+
+    res_comparcion = task_comparacion(env_vars,path_data_indices,parametros_mlflow , resultado_task )
+
+    task_evalaucion(env_vars,path_data_indices,parametros_mlflow , res_comparcion )
 pipeline_ML()
 
 
